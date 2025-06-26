@@ -1,38 +1,37 @@
-# controllers/book_controller.py
-from typing import List, Optional
+# Здесь должен быть контроллер для работы с книгами согласно README.md
+
 from models.book import Book
-from database.database_manager import DatabaseManager
 
 class BookController:
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager) -> None:
         self.db = db_manager
 
-    def add_book(self, title: str, author: str, isbn: str, year: int, quantity: int) -> int:
+    def add_book(self, title, author, isbn, year, quantity) -> int:
         book = Book(title, author, isbn, year, quantity)
         return self.db.add_book(book)
 
-    def get_book(self, book_id: int) -> Optional[Book]:
+    def get_book(self, book_id) -> Book | None:
         return self.db.get_book_by_id(book_id)
 
-    def get_all_books(self) -> List[Book]:
+    def get_all_books(self) -> list[Book]:
         return self.db.get_all_books()
 
-    def update_book(self, book_id: int, **kwargs) -> bool:
+    def update_book(self, book_id, **kwargs) -> bool:
         return self.db.update_book(book_id, **kwargs)
 
-    def delete_book(self, book_id: int) -> bool:
+    def delete_book(self, book_id) -> bool:
         return self.db.delete_book(book_id)
 
-    def search_books(self, query: str) -> List[Book]:
+    def search_books(self, query) -> list[Book]:
         return self.db.search_books(query)
 
-    def borrow_book(self, book_id: int) -> bool:
+    def borrow_book(self, book_id) -> bool:
         book = self.get_book(book_id)
         if book and book.borrow_book():
             return self.db.update_book(book_id, available=book.available)
         return False
 
-    def return_book(self, book_id: int) -> bool:
+    def return_book(self, book_id) -> bool:
         book = self.get_book(book_id)
         if book and book.return_book():
             return self.db.update_book(book_id, available=book.available)
