@@ -1,9 +1,5 @@
-# Здесь должно быть представление для работы с читателями согласно README.md
-
 import tkinter as tk
 from tkinter import ttk, messagebox
-from datetime import datetime, timedelta
-from typing import Optional
 
 class ReaderView(ttk.Frame):
     def __init__(self, parent, reader_controller) -> None:
@@ -13,63 +9,32 @@ class ReaderView(ttk.Frame):
         self.refresh_readers()
 
     def create_widgets(self) -> None:
-        # Main container
-        self.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Таблица с читателями
+        columns = ("id", "name", "email", "phone")
+        self.tree = ttk.Treeview(self, columns=columns, show='headings')
+        for col in columns:
+            self.tree.heading(col, text=col.capitalize())
+            self.tree.column(col, width=150, anchor='center')
+        self.tree.pack(expand=True, fill='both')
 
-        # Treeview for readers
-        self.tree = ttk.Treeview(self, columns=('id', 'name', 'email', 'phone'), show='headings')
-        self.tree.heading('id', text='ID')
-        self.tree.heading('name', text='Name')
-        self.tree.heading('email', text='Email')
-        self.tree.heading('phone', text='Phone')
-        self.tree.column('id', width=50, anchor='center')
-        self.tree.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscroll=scrollbar.set)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # Button frame
+        # Кнопки управления
         btn_frame = ttk.Frame(self)
-        btn_frame.pack(fill=tk.X, pady=(0, 10))
+        btn_frame.pack(fill='x', pady=5)
 
-        ttk.Button(btn_frame, text="Refresh", command=self.refresh_readers).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Add Reader", command=self.add_reader).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Delete Selected", command=self.delete_selected).pack(side=tk.LEFT, padx=5)
-
-        # Form for adding/editing readers
-        form_frame = ttk.LabelFrame(self, text="Reader Form")
-        form_frame.pack(fill=tk.X, pady=(0, 10))
-
-        ttk.Label(form_frame, text="Name:").grid(row=0, column=0, padx=5, pady=5, sticky='e')
-        self.name_entry = ttk.Entry(form_frame)
-        self.name_entry.grid(row=0, column=1, padx=5, pady=5, sticky='we')
-
-        ttk.Label(form_frame, text="Email:").grid(row=1, column=0, padx=5, pady=5, sticky='e')
-        self.email_entry = ttk.Entry(form_frame)
-        self.email_entry.grid(row=1, column=1, padx=5, pady=5, sticky='we')
-
-        ttk.Label(form_frame, text="Phone:").grid(row=2, column=0, padx=5, pady=5, sticky='e')
-        self.phone_entry = ttk.Entry(form_frame)
-        self.phone_entry.grid(row=2, column=1, padx=5, pady=5, sticky='we')
-
-        btn_subframe = ttk.Frame(form_frame)
-        btn_subframe.grid(row=3, column=0, columnspan=2, pady=5)
-
-        ttk.Button(btn_subframe, text="Save", command=self.save_reader).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_subframe, text="Clear", command=self.clear_form).pack(side=tk.LEFT, padx=5)
-
-        form_frame.columnconfigure(1, weight=1)
-        self.current_reader_id: Optional[int] = None
+        ttk.Button(btn_frame, text="Add Reader", command=self.add_reader).pack(side='left', padx=5)
+        ttk.Button(btn_frame, text="Delete Selected", command=self.delete_selected).pack(side='left', padx=5)
+        ttk.Button(btn_frame, text="View Loans", command=self.view_loans_selected).pack(side='left', padx=5)
 
     def refresh_readers(self) -> None:
+        readers = self.reader_controller.get_all_readers()
+
+        # Очистка таблицы
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        readers = self.reader_controller.get_all_readers()
+        # Заполнение таблицы
         for reader in readers:
-            self.tree.insert('', tk.END, values=(
+            self.tree.insert('', 'end', values=(
                 reader.id,
                 reader.name,
                 reader.email,
@@ -77,54 +42,71 @@ class ReaderView(ttk.Frame):
             ))
 
     def add_reader(self) -> None:
-        self.current_reader_id = None
-        self.clear_form()
+        def save():
+            name = name_var.get().strip()
+            email = email_var.get().strip()
+            phone = phone_var.get().strip()
+
+            if not name or not email or not phone:
+                messagebox.showerror("Error", "All fields are required")
+                return
+
+            self.reader_controller.add_reader(name, email, phone)
+            self.refresh_readers()
+            add_win.destroy()
+
+        add_win = tk.Toplevel(self)
+        add_win.title("Add Reader")
+
+        ttk.Label(add_win, text="Name:").pack(pady=2)
+        name_var = tk.StringVar()
+        ttk.Entry(add_win, textvariable=name_var).pack(pady=2)
+
+        ttk.Label(add_win, text="Email:").pack(pady=2)
+        email_var = tk.StringVar()
+        ttk.Entry(add_win, textvariable=email_var).pack(pady=2)
+
+        ttk.Label(add_win, text="Phone:").pack(pady=2)
+        phone_var = tk.StringVar()
+        ttk.Entry(add_win, textvariable=phone_var).pack(pady=2)
+
+        ttk.Button(add_win, text="Save", command=save).pack(pady=10)
 
     def delete_selected(self) -> None:
-        selected = self.tree.focus()
+        selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Warning", "Please select a reader first")
+            messagebox.showwarning("Warning", "No reader selected")
             return
 
-        reader_id = int(self.tree.item(selected, 'values')[0])
-        if messagebox.askyesno("Confirm", "Delete this reader?"):
-            try:
-                self.reader_controller.delete_reader(reader_id)
-                self.refresh_readers()
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to delete reader: {str(e)}")
+        for sel in selected:
+            reader_id = self.tree.item(sel)['values'][0]
+            self.reader_controller.delete_reader(reader_id)
+        self.refresh_readers()
 
-    def clear_form(self) -> None:
-        self.name_entry.delete(0, tk.END)
-        self.email_entry.delete(0, tk.END)
-        self.phone_entry.delete(0, tk.END)
-        self.current_reader_id = None
-
-    def save_reader(self) -> None:
-        name = self.name_entry.get()
-        email = self.email_entry.get()
-        phone = self.phone_entry.get()
-
-        if not all([name, email, phone]):
-            messagebox.showerror("Error", "All fields are required")
+    def view_loans_selected(self) -> None:
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Warning", "No reader selected")
             return
 
-        try:
-            if self.current_reader_id:
-                self.reader_controller.update_reader(
-                    self.current_reader_id,
-                    name=name,
-                    email=email,
-                    phone=phone
-                )
-                messagebox.showinfo("Success", "Reader updated successfully")
-            else:
-                self.reader_controller.add_reader(name, email, phone)
-                messagebox.showinfo("Success", "Reader added successfully")
+        reader_id = self.tree.item(selected[0])['values'][0]
+        loans = self.reader_controller.get_reader_loans(reader_id)
 
-            self.refresh_readers()
-            self.clear_form()
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save reader: {str(e)}")
+        loans_win = tk.Toplevel(self)
+        loans_win.title(f"Loans for Reader ID {reader_id}")
 
+        columns = ("loan_id", "book_title", "loan_date", "return_date", "status")
+        tree = ttk.Treeview(loans_win, columns=columns, show='headings')
+        for col in columns:
+            tree.heading(col, text=col.replace("_", " ").capitalize())
+            tree.column(col, width=120, anchor='center')
+        tree.pack(expand=True, fill='both')
 
+        for loan in loans:
+            tree.insert('', 'end', values=(
+                loan.get('loan_id'),
+                loan.get('book_title'),
+                loan.get('loan_date'),
+                loan.get('return_date'),
+                loan.get('status'),
+            ))
