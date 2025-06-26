@@ -3,7 +3,9 @@
 from datetime import datetime
 
 class Book:
-    def __init__(self, title: str, author: str, isbn: str, year: int, quantity: int) -> None:
+    def __init__(self, title, author, isbn, year, quantity) -> None:
+        self._validate_data(title, author, isbn, year, quantity)
+
         self.id = None
         self.title = title
         self.author = author
@@ -38,19 +40,18 @@ class Book:
             "available": self.available,
         }
 
-# class Book:
-#     def __init__(self, title, author, isbn, year, quantity) -> None:
-#         pass
-#
-#     def borrow_book(self) -> bool:
-#         pass
-#
-#     def return_book(self) -> bool:
-#         pass
-#
-#     def is_available(self) -> bool:
-#         pass
-#
-#     def to_dict(self) -> dict:
-#         pass
+    def _validate_data(self, title, author, isbn, year, quantity) -> None:
+        if title.strip() == "":
+            raise ValueError("Invalid title")
 
+        if author.strip() == "":
+            raise ValueError("Invalid author")
+
+        if isbn.strip() == "":
+            raise ValueError("Invalid ISBN")
+
+        if year <= 0:
+            raise ValueError("Invalid year")
+
+        if quantity <= 0:
+            raise ValueError("Invalid quantity")
