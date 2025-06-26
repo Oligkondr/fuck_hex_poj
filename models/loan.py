@@ -1,16 +1,9 @@
+# Здесь должна быть модель Loan согласно README.md
+
 from datetime import datetime
 
 class Loan:
-    def __init__(self, book_id: int, reader_id: int, loan_date: datetime, return_date: datetime) -> None:
-        if book_id <= 0 or reader_id <= 0:
-            raise ValueError("ID книги и читателя должны быть положительными числами")
-        
-        if not isinstance(loan_date, datetime) or not isinstance(return_date, datetime):
-            raise ValueError("Даты должны быть типа datetime")
-            
-        if return_date <= loan_date:
-            raise ValueError("Дата возврата должна быть позже даты выдачи")
-        
+    def __init__(self, book_id, reader_id, loan_date, return_date) -> None:
         self.book_id = book_id
         self.reader_id = reader_id
         self.loan_date = loan_date
@@ -36,3 +29,19 @@ class Loan:
             "return_date": self.return_date,
             "is_returned": self.is_returned,
         }
+
+    def _validate_data(self, book_id, reader_id, loan_date, return_date) -> None:
+        if book_id <= 0:
+            raise ValueError("Invalid book ID")
+
+        if reader_id <= 0:
+            raise ValueError("Invalid reader ID")
+
+        if not isinstance(loan_date, datetime):
+            raise ValueError("Invalid loan date")
+
+        if not isinstance(return_date, datetime):
+            raise ValueError("Invalid loan date")
+
+        if return_date <= loan_date:
+            raise ValueError("The loan date must be earlier than the return date")
