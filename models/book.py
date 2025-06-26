@@ -3,12 +3,8 @@
 from datetime import datetime
 
 class Book:
-    id_counter = 1
-
     def __init__(self, title: str, author: str, isbn: str, year: int, quantity: int) -> None:
-        self.id = Book.id_counter
-        Book.id_counter += 1
-
+        self.id = None
         self.title = title
         self.author = author
         self.isbn = isbn
