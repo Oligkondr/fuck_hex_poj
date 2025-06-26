@@ -3,7 +3,7 @@
 .PHONY: install test lint run
 
 install:
-	python -m pip install poetry 
+	python3 -m pip install poetry
 	poetry install --no-root
 
 test:
