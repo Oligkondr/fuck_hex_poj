@@ -4,6 +4,8 @@ from datetime import datetime
 
 class Loan:
     def __init__(self, book_id, reader_id, loan_date, return_date) -> None:
+        self._validate_data(book_id, reader_id, loan_date, return_date)
+
         self.book_id = book_id
         self.reader_id = reader_id
         self.loan_date = loan_date
