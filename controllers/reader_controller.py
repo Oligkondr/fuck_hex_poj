@@ -4,23 +4,50 @@ from models.reader import Reader
 
 class ReaderController:
     def __init__(self, db_manager) -> None:
-        pass
+        self.db = db_manager
 
     def add_reader(self, name, email, phone) -> int:
-        pass
+        reader = Reader(name, email, phone)
+        return self.db.insert_reader(reader)
 
     def get_reader(self, reader_id) -> Reader | None:
-        pass
+        row = self.db.select_reader_by_id(reader_id)
+        return Reader.from_row(row) if row else None
 
     def get_all_readers(self) -> list[Reader]:
-        pass
+        rows = self.db.select_all_readers()
+        return [Reader.from_row(row) for row in rows]
 
     def update_reader(self, reader_id, **kwargs) -> bool:
-        pass
+        return self.db.update_reader(reader_id, **kwargs)
 
     def delete_reader(self, reader_id) -> bool:
-        pass
+        return self.db.delete_reader(reader_id)
 
     def get_reader_loans(self, reader_id) -> list:
-        pass
+        return self.db.select_loans_by_reader(reader_id)
+
+# from models.reader import Reader
+
+# class ReaderController:
+#     def __init__(self, db_manager) -> None:
+#         pass
+
+#     def add_reader(self, name, email, phone) -> int:
+#         pass
+
+#     def get_reader(self, reader_id) -> Reader | None:
+#         pass
+
+#     def get_all_readers(self) -> list[Reader]:
+#         pass
+
+#     def update_reader(self, reader_id, **kwargs) -> bool:
+#         pass
+
+#     def delete_reader(self, reader_id) -> bool:
+#         pass
+
+#     def get_reader_loans(self, reader_id) -> list:
+#         pass
 
