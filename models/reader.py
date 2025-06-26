@@ -5,6 +5,8 @@ import re
 
 class Reader:
     def __init__(self, name, email, phone) -> None:
+        self._validate_data(self, name, email)
+        
         self.id = None
         self.name = name
         self.email = email
